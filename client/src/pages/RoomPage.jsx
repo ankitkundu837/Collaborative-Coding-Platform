@@ -29,6 +29,12 @@ function RoomPage() {
     const [currentUserId, setCurrentUserId] = useState(null);
 
     const stdinDebounceRef = useRef(null);
+    const participantsRef = useRef([]);
+
+    // Keep participants ref in sync with latest state
+    useEffect(() => {
+        participantsRef.current = participants;
+    }, [participants]);
 
     // Join room function
     const emitJoinRoom = useCallback(() => {
@@ -43,12 +49,12 @@ function RoomPage() {
 
         function handleJoinedRoom(data) {
             setRoomTitle(data.title || "Collaborative Session");
-            setParticipants(
-                (data.participants || []).map((p) => ({
-                    ...p,
-                    typing: false
-                }))
-            );
+            const newParticipants = (data.participants || []).map((p) => ({
+                ...p,
+                typing: false
+            }));
+            setParticipants(newParticipants);
+            participantsRef.current = newParticipants;
             setInitialCode(data.code || "");
             setLanguage(data.language || "cpp");
             setStdin(data.stdin || "");
@@ -69,35 +75,46 @@ function RoomPage() {
         }
 
         function handleUserJoined(participant) {
+            const alreadyPresent = participantsRef.current.some(
+                (p) => String(p.userId) === String(participant.userId)
+            );
+
             setParticipants((prev) => {
-                const exists = prev.some((p) => p.userId === participant.userId);
+                const exists = prev.some((p) => String(p.userId) === String(participant.userId));
                 if (exists) {
-                    return prev.map((p) => (p.userId === participant.userId ? { ...p, ...participant } : p));
+                    return prev.map((p) => (String(p.userId) === String(participant.userId) ? { ...p, ...participant } : p));
                 }
                 return [...prev, { ...participant, typing: false }];
             });
-            info(`${participant.displayName || "A developer"} joined the room`);
+
+            // Only notify if this is genuinely a new participant entering, not a state refresh
+            if (!alreadyPresent) {
+                info(`${participant.displayName || "A developer"} joined the room`);
+            }
         }
 
         function handleUserLeft(userId) {
-            setParticipants((prev) => {
-                const leavingUser = prev.find((p) => p.userId === userId);
-                if (leavingUser) {
-                    info(`${leavingUser.displayName || "A participant"} left the session`);
-                }
-                return prev.filter((p) => p.userId !== userId);
-            });
+            const leavingUser = participantsRef.current.find(
+                (p) => String(p.userId) === String(userId)
+            );
+
+            setParticipants((prev) => prev.filter((p) => String(p.userId) !== String(userId)));
+
+            // Only notify if the participant was actually in the session
+            if (leavingUser) {
+                info(`${leavingUser.displayName || "A participant"} left the session`);
+            }
         }
 
         function handleParticipantTyping({ userId }) {
             setParticipants((prev) =>
-                prev.map((p) => (p.userId === userId ? { ...p, typing: true } : p))
+                prev.map((p) => (String(p.userId) === String(userId) ? { ...p, typing: true } : p))
             );
         }
 
         function handleParticipantStopTyping({ userId }) {
             setParticipants((prev) =>
-                prev.map((p) => (p.userId === userId ? { ...p, typing: false } : p))
+                prev.map((p) => (String(p.userId) === String(userId) ? { ...p, typing: false } : p))
             );
         }
 
@@ -347,6 +364,8 @@ function RoomPage() {
                                     onLanguageChange={handleLanguageChange}
                                     onRun={handleRun}
                                     isRunning={isRunning}
+                                    currentUserId={currentUserId}
+                                    participants={participants}
                                 />
                             </Panel>
 
@@ -394,7 +413,7 @@ function RoomPage() {
                                                 </div>
                                                 <span className="participant-name">
                                                     {participant.displayName}
-                                                    {participant.userId === currentUserId && " (You)"}
+                                                    {String(participant.userId) === String(currentUserId) && " (You)"}
                                                 </span>
                                             </div>
 

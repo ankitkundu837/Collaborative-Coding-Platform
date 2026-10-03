@@ -101,17 +101,40 @@ function registerEditorEvents(io, socket) {
         if (!roomId || !rooms.has(roomId)) return;
 
         const room = rooms.get(roomId);
+        const sUserId = String(socket.user.id);
         const participant = room.participants.find(
-            (p) => p.userId === socket.user.id
+            (p) => String(p.userId) === sUserId
         );
 
+        if (participant) {
+            participant.cursor = { lineNumber, column, selection: selection || null };
+        }
+
         socket.to(roomId).emit("cursor-update", {
-            userId: socket.user.id,
+            userId: sUserId,
             displayName: getDisplayName(socket.user.email),
             color: participant?.color || "#3b82f6",
             lineNumber,
             column,
             selection: selection || null
+        });
+    });
+
+    socket.on("cursor-blur", ({ roomId }) => {
+        if (!roomId || !rooms.has(roomId)) return;
+
+        const room = rooms.get(roomId);
+        const sUserId = String(socket.user.id);
+        const participant = room.participants.find(
+            (p) => String(p.userId) === sUserId
+        );
+
+        if (participant) {
+            participant.cursor = null;
+        }
+
+        socket.to(roomId).emit("cursor-hidden", {
+            userId: sUserId
         });
     });
 

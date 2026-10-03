@@ -13,8 +13,50 @@ const PARTICIPANT_COLORS = [
     "#14b8a6"  // Teal
 ];
 
-function getParticipantColor(index) {
-    return PARTICIPANT_COLORS[index % PARTICIPANT_COLORS.length];
+function assignColorForUser(room, userId) {
+    const sUserId = String(userId);
+
+    // Collect all colors currently held by OTHER active participants in the room
+    const usedColors = new Set(
+        room.participants
+            .filter((p) => String(p.userId) !== sUserId && p.color)
+            .map((p) => p.color.toLowerCase())
+    );
+
+    // If this participant already has a valid color in this room AND it doesn't collide, keep it!
+    const existing = room.participants.find((p) => String(p.userId) === sUserId);
+    if (existing && existing.color && !usedColors.has(existing.color.toLowerCase())) {
+        return existing.color;
+    }
+
+    // Pick the first color from PARTICIPANT_COLORS that is NOT currently used
+    for (const color of PARTICIPANT_COLORS) {
+        if (!usedColors.has(color.toLowerCase())) {
+            return color;
+        }
+    }
+
+    // If more than 8 participants, pick the color with the minimum count among active users
+    const counts = {};
+    for (const color of PARTICIPANT_COLORS) {
+        counts[color.toLowerCase()] = 0;
+    }
+    for (const p of room.participants) {
+        if (p.color && String(p.userId) !== sUserId) {
+            const c = p.color.toLowerCase();
+            counts[c] = (counts[c] || 0) + 1;
+        }
+    }
+    let min = Infinity;
+    let selectedColor = PARTICIPANT_COLORS[0];
+    for (const color of PARTICIPANT_COLORS) {
+        const cnt = counts[color.toLowerCase()] || 0;
+        if (cnt < min) {
+            min = cnt;
+            selectedColor = color;
+        }
+    }
+    return selectedColor;
 }
 
 function registerRoomEvents(io, socket) {
@@ -35,29 +77,41 @@ function registerRoomEvents(io, socket) {
             return;
         }
 
+        const sUserId = String(socket.user.id);
+
         // Cancel any pending disconnect timer for this user in this room
-        const timerKey = `${cleanRoomId}-${socket.user.id}`;
+        const timerKey = `${cleanRoomId}-${sUserId}`;
         if (disconnectTimers.has(timerKey)) {
             clearTimeout(disconnectTimers.get(timerKey));
             disconnectTimers.delete(timerKey);
         }
 
         let participant = room.participants.find(
-            (p) => p.userId === socket.user.id
+            (p) => String(p.userId) === sUserId
         );
 
         if (!participant) {
-            const color = getParticipantColor(room.participants.length);
+            const color = assignColorForUser(room, sUserId);
             participant = {
-                userId: socket.user.id,
+                userId: sUserId,
                 displayName: getDisplayName(socket.user.email),
                 email: socket.user.email,
                 socketId: socket.id,
                 color,
-                joinedAt: new Date()
+                joinedAt: new Date(),
+                cursor: null
             };
             room.participants.push(participant);
         } else {
+            // Participant already in room: preserve their color unless it collides with another participant
+            const otherColors = new Set(
+                room.participants
+                    .filter((p) => String(p.userId) !== sUserId && p.color)
+                    .map((p) => p.color.toLowerCase())
+            );
+            if (!participant.color || otherColors.has(participant.color.toLowerCase())) {
+                participant.color = assignColorForUser(room, sUserId);
+            }
             participant.socketId = socket.id;
             participant.email = socket.user.email;
             participant.displayName = getDisplayName(socket.user.email);
@@ -100,7 +154,8 @@ function registerRoomEvents(io, socket) {
         if (!roomId || !rooms.has(roomId)) return;
 
         const room = rooms.get(roomId);
-        const timerKey = `${roomId}-${socket.user.id}`;
+        const sUserId = String(socket.user.id);
+        const timerKey = `${roomId}-${sUserId}`;
 
         if (disconnectTimers.has(timerKey)) {
             clearTimeout(disconnectTimers.get(timerKey));
@@ -108,11 +163,11 @@ function registerRoomEvents(io, socket) {
         }
 
         room.participants = room.participants.filter(
-            (p) => p.userId !== socket.user.id
+            (p) => String(p.userId) !== sUserId
         );
 
         socket.leave(roomId);
-        io.to(roomId).emit("user-left", socket.user.id);
+        io.to(roomId).emit("user-left", sUserId);
         persistRoom(roomId);
     });
 
@@ -120,9 +175,10 @@ function registerRoomEvents(io, socket) {
     // DISCONNECT HANDLING WITH RECOVERY GRACE PERIOD
     // =====================================
     socket.on("disconnect", (reason) => {
+        const sUserId = String(socket.user.id);
         for (const [roomId, room] of rooms.entries()) {
             const participant = room.participants.find(
-                (p) => p.userId === socket.user.id
+                (p) => String(p.userId) === sUserId
             );
 
             if (!participant) continue;
@@ -132,7 +188,7 @@ function registerRoomEvents(io, socket) {
                 continue;
             }
 
-            const timerKey = `${roomId}-${socket.user.id}`;
+            const timerKey = `${roomId}-${sUserId}`;
             if (disconnectTimers.has(timerKey)) continue;
 
             // 60-second grace window to handle network switching, tab throttling, or brief disconnects
@@ -141,7 +197,7 @@ function registerRoomEvents(io, socket) {
                 if (!currentRoom) return;
 
                 const currentParticipant = currentRoom.participants.find(
-                    (p) => p.userId === socket.user.id
+                    (p) => String(p.userId) === sUserId
                 );
 
                 // If user reconnected on a new socket during the grace period, do NOT kick them
@@ -151,10 +207,10 @@ function registerRoomEvents(io, socket) {
                 }
 
                 currentRoom.participants = currentRoom.participants.filter(
-                    (p) => p.userId !== socket.user.id
+                    (p) => String(p.userId) !== sUserId
                 );
 
-                io.to(roomId).emit("user-left", socket.user.id);
+                io.to(roomId).emit("user-left", sUserId);
                 disconnectTimers.delete(timerKey);
                 persistRoom(roomId);
             }, 60000);

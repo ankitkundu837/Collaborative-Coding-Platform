@@ -25,13 +25,14 @@ function registerChatEvents(io, socket) {
             room.messages = [];
         }
 
+        const sUserId = String(socket.user.id);
         const participant = room.participants.find(
-            (p) => p.userId === socket.user.id
+            (p) => String(p.userId) === sUserId
         );
 
         const chatMessage = {
             id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 6),
-            userId: socket.user.id,
+            userId: sUserId,
             displayName: getDisplayName(socket.user.email),
             color: participant?.color || "#3b82f6",
             message: message.trim(),

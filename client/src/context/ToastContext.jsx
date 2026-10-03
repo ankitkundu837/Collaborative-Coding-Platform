@@ -1,4 +1,4 @@
-import { createContext, useState, useCallback } from "react";
+import { createContext, useState, useCallback, useRef } from "react";
 
 export const ToastContext = createContext(null);
 
@@ -6,12 +6,34 @@ let toastId = 0;
 
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
+    const recentToastsRef = useRef(new Map());
 
     const removeToast = useCallback((id) => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
     }, []);
 
     const addToast = useCallback((message, type = "info", duration = 4000) => {
+        if (!message || typeof message !== "string") return null;
+
+        const now = Date.now();
+        const key = `${type}:${message.trim()}`;
+        const lastTime = recentToastsRef.current.get(key);
+
+        // Deduplicate identical toasts fired within 1500ms
+        if (lastTime && now - lastTime < 1500) {
+            return null;
+        }
+        recentToastsRef.current.set(key, now);
+
+        // Clean up old entries periodically
+        if (recentToastsRef.current.size > 50) {
+            for (const [k, time] of recentToastsRef.current.entries()) {
+                if (now - time > 5000) {
+                    recentToastsRef.current.delete(k);
+                }
+            }
+        }
+
         const id = ++toastId;
         setToasts((prev) => [...prev, { id, message, type }]);
 

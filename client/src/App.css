@@ -13,25 +13,86 @@
     position: absolute;
     pointer-events: none;
     z-index: 1000;
+    width: 0;
+    height: 0;
+}
+
+.remote-cursor-hitbox {
+    position: absolute;
+    top: 0;
+    left: -5px;
+    width: 12px;
+    height: 20px;
+    pointer-events: auto;
+    cursor: text;
 }
 
 .remote-line {
+    position: absolute;
+    top: 0;
+    left: 5px;
     width: 2px;
     height: 20px;
     background: #6366f1;
     border-radius: 1px;
+    pointer-events: none;
+}
+
+@keyframes remoteCursorBlink {
+    0%, 49.9% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0;
+    }
+}
+
+.remote-cursor-blinking {
+    animation: remoteCursorBlink 1s infinite;
 }
 
 .remote-name {
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 5px;
     background: #6366f1;
-    color: white;
+    color: #ffffff;
     font-size: 11px;
     font-weight: 600;
-    padding: 2px 6px;
+    line-height: 1.2;
+    padding: 2px 7px;
     border-radius: 4px;
-    margin-bottom: 2px;
+    border-bottom-left-radius: 0;
     white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(2px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+    user-select: none;
+    z-index: 1002;
+}
+
+/* Reveal user name badge on hover */
+.remote-cursor-hitbox:hover .remote-name {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* If cursor is on line 1, flip badge below the cursor so it is never clipped by top container */
+.remote-cursor-widget.cursor-top-line .remote-name {
+    bottom: auto;
+    top: calc(100% + 2px);
+    border-radius: 4px;
+    border-top-left-radius: 0;
+    transform: translateY(-2px);
+}
+
+.remote-cursor-widget.cursor-top-line .remote-cursor-hitbox:hover .remote-name {
+    transform: translateY(0);
 }
 
 /* Main Navigation Bar */

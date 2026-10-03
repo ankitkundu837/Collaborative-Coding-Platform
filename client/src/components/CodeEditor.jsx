@@ -9,7 +9,9 @@ function CodeEditor({
     language,
     onLanguageChange,
     onRun,
-    isRunning
+    isRunning,
+    currentUserId,
+    participants
 }) {
     const [code, setCode] = useState(initialCode || "");
     const isRemoteUpdate = useRef(false);
@@ -20,6 +22,9 @@ function CodeEditor({
     const editorRef = useRef(null);
     const monacoRef = useRef(null);
     const widgetsRef = useRef({});
+    const pendingCursorsRef = useRef({});
+    const latestCursorPos = useRef(null);
+    const hasActiveCursor = useRef(false);
 
     // Update code when initialCode is loaded from room snapshot
     useEffect(() => {
@@ -27,6 +32,55 @@ function CodeEditor({
             setCode(initialCode);
         }
     }, [initialCode]);
+
+    // Helper to add or update remote cursor widget
+    const syncRemoteCursor = useCallback((userId, displayName, color, lineNumber, column) => {
+        if (!userId || String(userId) === String(currentUserId)) return;
+
+        if (!editorRef.current || !monacoRef.current) {
+            pendingCursorsRef.current[userId] = {
+                userId,
+                displayName,
+                color,
+                lineNumber,
+                column
+            };
+            return;
+        }
+
+        let widget = widgetsRef.current[userId];
+        if (!widget) {
+            widget = new RemoteCursorWidget(
+                monacoRef.current,
+                editorRef.current,
+                userId,
+                displayName || "Anonymous",
+                color || "#6366f1",
+                lineNumber || 1,
+                column || 1
+            );
+            widgetsRef.current[userId] = widget;
+            editorRef.current.addContentWidget(widget);
+        } else {
+            widget.update(lineNumber, column, color, displayName);
+        }
+    }, [currentUserId]);
+
+    // Synchronize initial cursors from room participants
+    useEffect(() => {
+        if (!participants || !editorRef.current || !monacoRef.current) return;
+        participants.forEach((p) => {
+            if (String(p.userId) !== String(currentUserId) && p.cursor) {
+                syncRemoteCursor(
+                    p.userId,
+                    p.displayName,
+                    p.color,
+                    p.cursor.lineNumber,
+                    p.cursor.column
+                );
+            }
+        });
+    }, [participants, currentUserId, syncRemoteCursor]);
 
     // Socket listeners for live code sync and remote cursor positions
     useEffect(() => {
@@ -36,24 +90,42 @@ function CodeEditor({
         }
 
         function handleCursorUpdate(data) {
-            if (!editorRef.current || !monacoRef.current) return;
+            if (!data || !data.userId || String(data.userId) === String(currentUserId)) return;
+            syncRemoteCursor(
+                data.userId,
+                data.displayName,
+                data.color,
+                data.lineNumber,
+                data.column
+            );
+        }
 
-            let widget = widgetsRef.current[data.userId];
+        function handleCursorHidden({ userId }) {
+            const widget = widgetsRef.current[userId];
+            if (widget && editorRef.current) {
+                editorRef.current.removeContentWidget(widget);
+                delete widgetsRef.current[userId];
+            }
+            delete pendingCursorsRef.current[userId];
+        }
 
-            if (!widget) {
-                widget = new RemoteCursorWidget(
-                    monacoRef.current,
-                    editorRef.current,
-                    data.userId,
-                    data.displayName || "Anonymous",
-                    data.color || "#6366f1",
-                    data.lineNumber || 1,
-                    data.column || 1
-                );
-                widgetsRef.current[data.userId] = widget;
-                editorRef.current.addContentWidget(widget);
-            } else {
-                widget.update(data.lineNumber, data.column, data.color);
+        function handleUserJoined(participant) {
+            // Only announce cursor to newly joined user if local user is actively focused in editor
+            if (
+                editorRef.current &&
+                roomId &&
+                String(participant?.userId) !== String(currentUserId) &&
+                hasActiveCursor.current &&
+                editorRef.current.hasTextFocus()
+            ) {
+                const pos = editorRef.current.getPosition();
+                if (pos) {
+                    socket.emit("cursor-change", {
+                        roomId,
+                        lineNumber: pos.lineNumber,
+                        column: pos.column
+                    });
+                }
             }
         }
 
@@ -63,18 +135,35 @@ function CodeEditor({
                 editorRef.current.removeContentWidget(widget);
                 delete widgetsRef.current[userId];
             }
+            delete pendingCursorsRef.current[userId];
         }
 
         socket.on("code-update", handleCodeUpdate);
         socket.on("cursor-update", handleCursorUpdate);
+        socket.on("cursor-hidden", handleCursorHidden);
+        socket.on("user-joined", handleUserJoined);
         socket.on("user-left", handleUserLeft);
 
         return () => {
             socket.off("code-update", handleCodeUpdate);
             socket.off("cursor-update", handleCursorUpdate);
+            socket.off("cursor-hidden", handleCursorHidden);
+            socket.off("user-joined", handleUserJoined);
             socket.off("user-left", handleUserLeft);
+
+            // Clean up any mounted cursor widgets on unmount
+            if (editorRef.current) {
+                Object.values(widgetsRef.current).forEach((w) => {
+                    try {
+                        editorRef.current.removeContentWidget(w);
+                    } catch (e) {
+                        // ignore unmount errors
+                    }
+                });
+            }
+            widgetsRef.current = {};
         };
-    }, []);
+    }, [roomId, currentUserId, syncRemoteCursor]);
 
     // Cleanup typing states on unmount
     useEffect(() => {
@@ -127,21 +216,67 @@ function CodeEditor({
             editorRef.current = editor;
             monacoRef.current = monaco;
 
+            // Flush any pending remote cursors received while Monaco was initializing
+            Object.values(pendingCursorsRef.current).forEach((cur) => {
+                syncRemoteCursor(
+                    cur.userId,
+                    cur.displayName,
+                    cur.color,
+                    cur.lineNumber,
+                    cur.column
+                );
+            });
+            pendingCursorsRef.current = {};
+
+            // Broadcast cursor when editor gains focus
+            editor.onDidFocusEditorText(() => {
+                hasActiveCursor.current = true;
+                const pos = editor.getPosition();
+                if (pos && roomId) {
+                    socket.emit("cursor-change", {
+                        roomId,
+                        lineNumber: pos.lineNumber,
+                        column: pos.column
+                    });
+                }
+            });
+
+            // Hide remote cursor when editor loses focus
+            editor.onDidBlurEditorText(() => {
+                hasActiveCursor.current = false;
+                if (roomId) {
+                    socket.emit("cursor-blur", { roomId });
+                }
+            });
+
             editor.onDidChangeCursorPosition((event) => {
-                if (throttleTimer.current) return;
+                if (!editor.hasTextFocus()) return;
+                hasActiveCursor.current = true;
 
-                throttleTimer.current = setTimeout(() => {
-                    throttleTimer.current = null;
-                }, 40);
-
-                socket.emit("cursor-change", {
-                    roomId,
+                latestCursorPos.current = {
                     lineNumber: event.position.lineNumber,
                     column: event.position.column
-                });
+                };
+
+                if (!throttleTimer.current) {
+                    socket.emit("cursor-change", {
+                        roomId,
+                        ...latestCursorPos.current
+                    });
+
+                    throttleTimer.current = setTimeout(() => {
+                        throttleTimer.current = null;
+                        if (latestCursorPos.current && editor.hasTextFocus()) {
+                            socket.emit("cursor-change", {
+                                roomId,
+                                ...latestCursorPos.current
+                            });
+                        }
+                    }, 40);
+                }
             });
         },
-        [roomId]
+        [roomId, syncRemoteCursor]
     );
 
     function handleRun() {
