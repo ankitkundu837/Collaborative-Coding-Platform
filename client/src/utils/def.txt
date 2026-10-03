@@ -1,0 +1,12 @@
+A utility performs small reusable operations.
+saveToken()
+
+getToken()
+
+removeToken()
+
+formatDate()
+
+validateEmail()
+
+copyToClipboard()

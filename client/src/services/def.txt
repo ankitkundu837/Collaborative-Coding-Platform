@@ -1,0 +1,20 @@
+A service communicates with external systems.
+authService       
+
+↓
+
+Backend API
+
+roomService
+
+↓
+
+Backend API
+
+executionService
+
+↓
+
+Judge0 API
+Services usually make HTTP requests.
+unstopsmarthire.exe --in-process-gpu

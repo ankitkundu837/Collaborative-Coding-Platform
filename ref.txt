@@ -1,0 +1,35 @@
+client->
+    src/
+
+      assets/
+
+      components/
+
+      pages/
+
+      hooks/
+
+      context/
+
+      services/
+
+      socket/
+      utils/
+server->
+  config/
+
+controllers/
+
+middleware/
+
+models/
+
+routes/
+
+services/
+
+socket/
+
+utils/
+
+executor/
