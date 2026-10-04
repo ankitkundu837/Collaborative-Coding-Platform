@@ -27,6 +27,7 @@ function RoomPage() {
     const [chatMessages, setChatMessages] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [initialYjsUpdate, setInitialYjsUpdate] = useState(null);
 
     const stdinDebounceRef = useRef(null);
     const participantsRef = useRef([]);
@@ -56,6 +57,7 @@ function RoomPage() {
             setParticipants(newParticipants);
             participantsRef.current = newParticipants;
             setInitialCode(data.code || "");
+            setInitialYjsUpdate(data.yjsUpdate || null);
             setLanguage(data.language || "cpp");
             setStdin(data.stdin || "");
             setOutput(data.output || "");
@@ -360,6 +362,7 @@ function RoomPage() {
                                 <CodeEditor
                                     roomId={roomId}
                                     initialCode={initialCode}
+                                    initialYjsUpdate={initialYjsUpdate}
                                     language={language}
                                     onLanguageChange={handleLanguageChange}
                                     onRun={handleRun}

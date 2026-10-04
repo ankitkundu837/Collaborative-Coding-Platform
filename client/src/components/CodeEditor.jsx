@@ -1,11 +1,14 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import Editor from "@monaco-editor/react";
+import * as Y from "yjs";
+import { MonacoBinding } from "y-monaco";
 import socket from "../socket/socket";
 import RemoteCursorWidget from "./RemoteCursorWidget";
 
 function CodeEditor({
     roomId,
     initialCode,
+    initialYjsUpdate,
     language,
     onLanguageChange,
     onRun,
@@ -13,9 +16,11 @@ function CodeEditor({
     currentUserId,
     participants
 }) {
-    const [code, setCode] = useState(initialCode || "");
-    const isRemoteUpdate = useRef(false);
-    const debounceTimer = useRef(null);
+    const yDocRef = useRef(null);
+    const yTextRef = useRef(null);
+    const bindingRef = useRef(null);
+    const hasInitializedYjs = useRef(false);
+
     const throttleTimer = useRef(null);
     const typingTimer = useRef(null);
     const isTypingRef = useRef(false);
@@ -26,12 +31,58 @@ function CodeEditor({
     const latestCursorPos = useRef(null);
     const hasActiveCursor = useRef(false);
 
-    // Update code when initialCode is loaded from room snapshot
+    // Initialize Y.Doc once
+    if (!yDocRef.current) {
+        const doc = new Y.Doc();
+        yDocRef.current = doc;
+        yTextRef.current = doc.getText("monaco");
+
+        // Broadcast local operations to peers via socket
+        doc.on("update", (update, origin) => {
+            if (origin !== "remote" && roomId) {
+                socket.emit("yjs-update", {
+                    roomId,
+                    update // Send binary natively
+                });
+            }
+        });
+    }
+
+    // Apply initial Yjs snapshot when received from RoomPage snapshot
     useEffect(() => {
-        if (initialCode !== undefined && initialCode !== null) {
-            setCode(initialCode);
+        if (initialYjsUpdate && yDocRef.current && !hasInitializedYjs.current) {
+            try {
+                hasInitializedYjs.current = true;
+                Y.applyUpdate(yDocRef.current, new Uint8Array(initialYjsUpdate), "remote");
+            } catch (err) {
+                console.error("Failed to apply initial Yjs update from snapshot:", err);
+            }
         }
-    }, [initialCode]);
+    }, [initialYjsUpdate]);
+
+    // Cleanup Yjs document and binding on unmount
+    useEffect(() => {
+        return () => {
+            if (bindingRef.current) {
+                try {
+                    bindingRef.current.destroy();
+                } catch (e) {
+                    // ignore cleanup error
+                }
+                bindingRef.current = null;
+            }
+            if (yDocRef.current) {
+                try {
+                    yDocRef.current.destroy();
+                } catch (e) {
+                    // ignore cleanup error
+                }
+                yDocRef.current = null;
+            }
+            // Reset initialization flag for React Strict Mode remounts
+            hasInitializedYjs.current = false;
+        };
+    }, []);
 
     // Helper to add or update remote cursor widget
     const syncRemoteCursor = useCallback((userId, displayName, color, lineNumber, column) => {
@@ -82,11 +133,27 @@ function CodeEditor({
         });
     }, [participants, currentUserId, syncRemoteCursor]);
 
-    // Socket listeners for live code sync and remote cursor positions
+    // Socket listeners for Yjs CRDT sync and remote cursor positions
     useEffect(() => {
-        function handleCodeUpdate(newCode) {
-            isRemoteUpdate.current = true;
-            setCode(newCode);
+        function handleYjsUpdate(updateData) {
+            if (!yDocRef.current || !updateData) return;
+            try {
+                const updateUint8 = new Uint8Array(updateData);
+                Y.applyUpdate(yDocRef.current, updateUint8, "remote");
+            } catch (err) {
+                console.error("Failed to apply remote Yjs update:", err);
+            }
+        }
+
+        function handleYjsInit(stateData) {
+            if (!yDocRef.current || !stateData) return;
+            try {
+                hasInitializedYjs.current = true;
+                const stateUint8 = new Uint8Array(stateData);
+                Y.applyUpdate(yDocRef.current, stateUint8, "remote");
+            } catch (err) {
+                console.error("Failed to apply Yjs init state:", err);
+            }
         }
 
         function handleCursorUpdate(data) {
@@ -110,7 +177,6 @@ function CodeEditor({
         }
 
         function handleUserJoined(participant) {
-            // Only announce cursor to newly joined user if local user is actively focused in editor
             if (
                 editorRef.current &&
                 roomId &&
@@ -138,20 +204,21 @@ function CodeEditor({
             delete pendingCursorsRef.current[userId];
         }
 
-        socket.on("code-update", handleCodeUpdate);
+        socket.on("yjs-update", handleYjsUpdate);
+        socket.on("yjs-init", handleYjsInit);
         socket.on("cursor-update", handleCursorUpdate);
         socket.on("cursor-hidden", handleCursorHidden);
         socket.on("user-joined", handleUserJoined);
         socket.on("user-left", handleUserLeft);
 
         return () => {
-            socket.off("code-update", handleCodeUpdate);
+            socket.off("yjs-update", handleYjsUpdate);
+            socket.off("yjs-init", handleYjsInit);
             socket.off("cursor-update", handleCursorUpdate);
             socket.off("cursor-hidden", handleCursorHidden);
             socket.off("user-joined", handleUserJoined);
             socket.off("user-left", handleUserLeft);
 
-            // Clean up any mounted cursor widgets on unmount
             if (editorRef.current) {
                 Object.values(widgetsRef.current).forEach((w) => {
                     try {
@@ -168,53 +235,83 @@ function CodeEditor({
     // Cleanup typing states on unmount
     useEffect(() => {
         return () => {
-            clearTimeout(debounceTimer.current);
             clearTimeout(throttleTimer.current);
             clearTimeout(typingTimer.current);
 
-            if (isTypingRef.current) {
+            if (isTypingRef.current && roomId) {
                 socket.emit("typing-stop", { roomId });
             }
         };
     }, [roomId]);
-
-    // Handle local user code changes
-    function handleEditorChange(value) {
-        if (value === undefined) return;
-        setCode(value);
-
-        if (isRemoteUpdate.current) {
-            isRemoteUpdate.current = false;
-            return;
-        }
-
-        // Start typing indicator
-        if (!isTypingRef.current) {
-            isTypingRef.current = true;
-            socket.emit("typing-start", { roomId });
-        }
-
-        clearTimeout(typingTimer.current);
-        typingTimer.current = setTimeout(() => {
-            isTypingRef.current = false;
-            socket.emit("typing-stop", { roomId });
-        }, 1500);
-
-        // Debounce code broadcast
-        clearTimeout(debounceTimer.current);
-        debounceTimer.current = setTimeout(() => {
-            socket.emit("code-change", {
-                roomId,
-                code: value
-            });
-        }, 80);
-    }
 
     // Monaco Editor Mount
     const handleEditorMount = useCallback(
         (editor, monaco) => {
             editorRef.current = editor;
             monacoRef.current = monaco;
+
+            if (import.meta.env.DEV) {
+                window.__editor = editor;
+                window.__monaco = monaco;
+            }
+
+            // Fix for y-monaco CRDT index desyncs: Force LF instead of CRLF
+            const model = editor.getModel();
+            if (model) {
+                model.setEOL(monaco.editor.EndOfLineSequence.LF);
+            }
+
+            const doc = yDocRef.current;
+            const ytext = yTextRef.current;
+
+            // Apply initial snapshot if available and not yet applied
+            if (initialYjsUpdate && !hasInitializedYjs.current) {
+                hasInitializedYjs.current = true;
+                try {
+                    Y.applyUpdate(doc, new Uint8Array(initialYjsUpdate), "remote");
+                } catch (e) {
+                    console.error("Error applying initialYjsUpdate on mount:", e);
+                }
+            } else if (!roomId && initialCode && ytext.length === 0) {
+                // Non-room standalone fallback
+                ytext.insert(0, initialCode);
+            }
+
+            // Create Monaco Binding to synchronize Monaco Model with Y.Text
+            if (bindingRef.current) {
+                try {
+                    bindingRef.current.destroy();
+                } catch (e) {
+                    // ignore
+                }
+            }
+            bindingRef.current = new MonacoBinding(
+                ytext,
+                editor.getModel(),
+                new Set([editor]),
+                null
+            );
+
+            // Fetch the authoritative state from the server
+            if (roomId) {
+                socket.emit("get-yjs-state", { roomId });
+            }
+
+            // Track user typing indicator when local user types
+            editor.onDidChangeModelContent(() => {
+                if (editor.hasTextFocus() && roomId) {
+                    if (!isTypingRef.current) {
+                        isTypingRef.current = true;
+                        socket.emit("typing-start", { roomId });
+                    }
+
+                    clearTimeout(typingTimer.current);
+                    typingTimer.current = setTimeout(() => {
+                        isTypingRef.current = false;
+                        socket.emit("typing-stop", { roomId });
+                    }, 1500);
+                }
+            });
 
             // Flush any pending remote cursors received while Monaco was initializing
             Object.values(pendingCursorsRef.current).forEach((cur) => {
@@ -249,6 +346,7 @@ function CodeEditor({
                 }
             });
 
+            // Throttle cursor movement updates
             editor.onDidChangeCursorPosition((event) => {
                 if (!editor.hasTextFocus()) return;
                 hasActiveCursor.current = true;
@@ -276,12 +374,17 @@ function CodeEditor({
                 }
             });
         },
-        [roomId, syncRemoteCursor]
+        [roomId, initialCode, initialYjsUpdate, syncRemoteCursor]
     );
 
     function handleRun() {
         if (isRunning || !onRun) return;
-        onRun(code);
+        const currentCode = editorRef.current
+            ? editorRef.current.getValue()
+            : yTextRef.current
+            ? yTextRef.current.toString()
+            : initialCode || "";
+        onRun(currentCode);
     }
 
     // Monaco language mapping
@@ -340,8 +443,7 @@ function CodeEditor({
                     width="100%"
                     theme="vs-dark"
                     language={monacoLanguage}
-                    value={code}
-                    onChange={handleEditorChange}
+                    defaultValue={initialCode || ""}
                     onMount={handleEditorMount}
                     options={{
                         automaticLayout: true,

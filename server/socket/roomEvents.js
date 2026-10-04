@@ -1,5 +1,6 @@
+const Y = require("yjs");
 const { rooms, disconnectTimers } = require("../store/roomStore");
-const { getRoom, persistRoom } = require("../services/roomService");
+const { getRoom, persistRoom, ensureRoomYDoc } = require("../services/roomService");
 const getDisplayName = require("../utils/displayName");
 
 const PARTICIPANT_COLORS = [
@@ -129,13 +130,17 @@ function registerRoomEvents(io, socket) {
         // Notify other participants in the room
         socket.to(cleanRoomId).emit("user-joined", participant);
 
-        // Send initial room snapshot to joining user with current terminal state
+        // Send initial room snapshot to joining user with current terminal state and Yjs state
+        const yDoc = ensureRoomYDoc(room);
+        const yjsUpdate = Y.encodeStateAsUpdate(yDoc);
+
         socket.emit("joined-room", {
             roomId: cleanRoomId,
             title: room.title || "Collaborative Session",
             hostId: room.hostId,
             participants: room.participants,
             code: room.code,
+            yjsUpdate,
             language: room.language,
             stdin: room.stdin || "",
             output: room.output || "",
@@ -145,6 +150,8 @@ function registerRoomEvents(io, socket) {
             currentUserId: socket.user.id,
             userColor: participant.color
         });
+
+        socket.emit("yjs-init", yjsUpdate);
     });
 
     // =====================================

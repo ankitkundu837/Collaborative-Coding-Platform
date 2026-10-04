@@ -1,5 +1,6 @@
+const Y = require("yjs");
 const { rooms } = require("../store/roomStore");
-const { persistRoom } = require("../services/roomService");
+const { persistRoom, ensureRoomYDoc } = require("../services/roomService");
 const getDisplayName = require("../utils/displayName");
 
 // Debounce timer map for database persistence
@@ -7,7 +8,50 @@ const persistDebounceTimers = new Map();
 
 function registerEditorEvents(io, socket) {
     // =====================================
-    // CODE SYNCHRONIZATION
+    // YJS CRDT REALTIME SYNCHRONIZATION
+    // =====================================
+    socket.on("get-yjs-state", ({ roomId }) => {
+        if (!roomId || !rooms.has(roomId)) return;
+        const room = rooms.get(roomId);
+        const yDoc = ensureRoomYDoc(room);
+        const yjsState = Y.encodeStateAsUpdate(yDoc);
+        socket.emit("yjs-init", yjsState);
+    });
+
+    socket.on("yjs-update", ({ roomId, update }) => {
+        if (!roomId || !rooms.has(roomId) || !update) return;
+
+        const room = rooms.get(roomId);
+        const yDoc = ensureRoomYDoc(room);
+
+        try {
+            const updateUint8 = new Uint8Array(update);
+            Y.applyUpdate(yDoc, updateUint8);
+            room.code = yDoc.getText("monaco").toString();
+            room.lastActiveAt = new Date();
+        } catch (err) {
+            console.error("Error applying Yjs update on server:", err);
+            return;
+        }
+
+        // Broadcast binary update to other peers in room
+        socket.to(roomId).emit("yjs-update", update);
+
+        // Debounced DB persistence (save 3 seconds after last edit)
+        if (persistDebounceTimers.has(roomId)) {
+            clearTimeout(persistDebounceTimers.get(roomId));
+        }
+
+        const timer = setTimeout(() => {
+            persistRoom(roomId);
+            persistDebounceTimers.delete(roomId);
+        }, 3000);
+
+        persistDebounceTimers.set(roomId, timer);
+    });
+
+    // =====================================
+    // LEGACY CODE SYNCHRONIZATION FALLBACK
     // =====================================
     socket.on("code-change", ({ roomId, code }) => {
         if (!roomId || !rooms.has(roomId) || typeof code !== "string") return;

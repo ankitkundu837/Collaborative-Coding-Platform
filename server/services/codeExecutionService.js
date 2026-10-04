@@ -188,7 +188,8 @@ function runProcess(cmd, args, stdin, timeoutMs, cleanup, startTime, resolve) {
 async function executeLocalSandbox(language, sourceCode, stdin = "") {
     return new Promise((resolve) => {
         const tempId = crypto.randomUUID();
-        const tempDir = path.join(__dirname, "../temp", tempId);
+        const os = require("os");
+        const tempDir = path.join(os.tmpdir(), "codesync-temp", tempId);
 
         try {
             fs.mkdirSync(tempDir, { recursive: true });

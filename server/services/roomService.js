@@ -1,6 +1,22 @@
+const Y = require("yjs");
 const { nanoid } = require("nanoid");
 const { Room, DEFAULT_STARTER_CODE } = require("../models/Room");
 const { rooms } = require("../store/roomStore");
+
+/**
+ * Ensure an in-memory room has an active Y.Doc initialized
+ */
+function ensureRoomYDoc(room) {
+    if (!room) return null;
+    if (!room.yDoc) {
+        room.yDoc = new Y.Doc();
+        const ytext = room.yDoc.getText("monaco");
+        if (room.code && ytext.length === 0) {
+            ytext.insert(0, room.code);
+        }
+    }
+    return room.yDoc;
+}
 
 /**
  * Get or load a room from memory, or fallback to MongoDB
@@ -10,7 +26,9 @@ async function getRoom(roomId) {
 
     // 1. Check in-memory fast store
     if (rooms.has(roomId)) {
-        return rooms.get(roomId);
+        const memRoom = rooms.get(roomId);
+        ensureRoomYDoc(memRoom);
+        return memRoom;
     }
 
     // 2. Fallback to MongoDB persistence
@@ -29,6 +47,7 @@ async function getRoom(roomId) {
                 lastActiveAt: new Date()
             };
 
+            ensureRoomYDoc(memoryRoom);
             rooms.set(roomId, memoryRoom);
             return memoryRoom;
         }
@@ -68,6 +87,7 @@ async function createRoom({ hostId, title, language = "cpp" }) {
         lastActiveAt: new Date()
     };
 
+    ensureRoomYDoc(memoryRoom);
     rooms.set(roomId, memoryRoom);
 
     return memoryRoom;
@@ -112,6 +132,7 @@ async function getUserRooms(userId) {
 }
 
 module.exports = {
+    ensureRoomYDoc,
     getRoom,
     createRoom,
     persistRoom,
