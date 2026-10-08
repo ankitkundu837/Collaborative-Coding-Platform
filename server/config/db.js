@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-    let mongoUri = (process.env.MONGO_URI && process.env.MONGO_URI.trim()) || "";
-    if (!mongoUri || mongoUri.includes("cluster0.mongodb.net") || mongoUri.includes("<username>")) {
-        mongoUri = "mongodb+srv://admin:4UaqIKxEvR1S2pfV@locatordb.nj82y8d.mongodb.net/?appName=LocatorDb";
+    const mongoUri = (process.env.MONGO_URI && process.env.MONGO_URI.trim()) || "";
+    if (!mongoUri) {
+        console.warn("⚠️ MONGO_URI environment variable is not defined. Database features will run in offline mode.");
+        return;
     }
 
     try {

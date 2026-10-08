@@ -5,12 +5,12 @@
 # ==============================================================================
 
 # --- Stage 1: Build SPA ---
-FROM node:20-alpine AS builder
+# client/Dockerfile
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
+COPY package.json package-lock.json ./
+RUN rm -rf node_modules package-lock.json && npm install
 
 COPY . .
 

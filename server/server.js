@@ -2,12 +2,13 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
 require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: true });
 
-// Ensure user-specified MongoDB connection is used if placeholder exists in container env
-if (!process.env.MONGO_URI || process.env.MONGO_URI.includes("cluster0.mongodb.net") || process.env.MONGO_URI.includes("<username>")) {
-    process.env.MONGO_URI = "mongodb+srv://admin:4UaqIKxEvR1S2pfV@locatordb.nj82y8d.mongodb.net/?appName=LocatorDb";
-}
 
 const dns = require("dns");
+try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (err) {
+    // Fallback if environment restricts custom DNS servers
+}
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder("ipv4first");
 }
