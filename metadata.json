@@ -1,0 +1,7 @@
+{
+  "name": "CodeSync",
+  "description": "Collaborative real-time coding platform with live code editing, multi-language execution, instant chat, and shared terminal.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -2,55 +2,77 @@
    CodeSync Design System & Global Styles
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-    /* Color Palette */
-    --bg-main: #090d16;
-    --bg-card: #0f172a;
-    --bg-card-hover: #131c35;
-    --bg-card-subtle: #1e293b;
-    --bg-input: #0b1120;
-    --bg-glass: rgba(15, 23, 42, 0.75);
+    /* Prisma Color Palette */
+    --bg-main: #000000;
+    --bg-card: #101010;
+    --bg-card-hover: #171717;
+    --bg-card-feature: #212121;
+    --bg-card-subtle: #141414;
+    --bg-input: #0a0a0a;
+    --bg-glass: rgba(16, 16, 16, 0.85);
     
     --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(99, 102, 241, 0.4);
-    --border-focus: #6366f1;
+    --border-hover: rgba(222, 219, 200, 0.3);
+    --border-focus: #DEDBC8;
 
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --primary-light: #818cf8;
-    --primary-glow: rgba(99, 102, 241, 0.25);
+    --primary: #DEDBC8;
+    --primary-hover: #ECE9D8;
+    --primary-light: #E1E0CC;
+    --primary-glow: rgba(222, 219, 200, 0.2);
 
-    --accent-cyan: #06b6d4;
+    --accent-cream: #DEDBC8;
     --accent-emerald: #10b981;
     --accent-amber: #f59e0b;
     --accent-rose: #f43f5e;
-    --accent-purple: #a855f7;
+    --accent-cyan: #38bdf8;
 
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text-main: #E1E0CC;
+    --text-cream: #E1E0CC;
+    --text-muted: #9CA3AF;
+    --text-dim: #6B7280;
 
-    /* Typography */
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    /* Prisma Typography */
+    --font-sans: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
 
     /* Shadow tokens */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.35);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 25px rgba(222, 219, 200, 0.15);
 
     /* Transitions */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.25s ease;
+    --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+button, a, input, select, textarea {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+    outline: none;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid #DEDBC8;
+    outline-offset: 2px;
+}
+
+code, pre, .font-mono, [data-mono] {
+    font-family: 'JetBrains Mono', monospace !important;
 }
 
 html, body {
@@ -98,7 +120,14 @@ a {
 }
 
 a:hover {
-    color: #a5b4fc;
+    color: #ECE9D8;
+}
+
+/* Specific exclusion so buttons never inherit link text color on hover */
+a.btn,
+a.prisma-nav-login-link,
+a.prisma-nav-cta-btn {
+    text-decoration: none !important;
 }
 
 /* Button Component Styles */
@@ -107,17 +136,19 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px 18px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 9999px;
     font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: all var(--transition-fast);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
     text-decoration: none;
     user-select: none;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
 }
 
 .btn:disabled {
@@ -126,28 +157,120 @@ a:hover {
     pointer-events: none;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-    color: white;
-    box-shadow: 0 4px 14px var(--primary-glow);
+.btn-primary,
+a.btn-primary,
+button.btn-primary {
+    background: #DEDBC8 !important;
+    color: #000000 !important;
+    box-shadow: 0 4px 14px rgba(222, 219, 200, 0.2);
+    border-radius: 9999px;
+    font-weight: 600;
+    border: 1px solid #DEDBC8;
 }
 
-.btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7073f4 0%, var(--primary) 100%);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+.btn-primary:hover:not(:disabled),
+a.btn-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled),
+.btn-primary:focus:not(:disabled),
+a.btn-primary:focus:not(:disabled),
+button.btn-primary:focus:not(:disabled),
+.btn-primary:active:not(:disabled),
+a.btn-primary:active:not(:disabled),
+button.btn-primary:active:not(:disabled) {
+    background: #ECE9D8 !important;
+    border-color: #ECE9D8 !important;
+    color: #000000 !important;
+    box-shadow: 0 6px 20px rgba(222, 219, 200, 0.35);
     transform: translateY(-1px);
 }
 
-.btn-secondary {
-    background: var(--bg-card-subtle);
-    color: var(--text-main);
-    border-color: var(--border-color);
+.btn-secondary,
+a.btn-secondary,
+button.btn-secondary {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #E1E0CC !important;
+    border: 1px solid rgba(222, 219, 200, 0.18) !important;
+    border-radius: 9999px;
+    font-weight: 500;
 }
 
-.btn-secondary:hover:not(:disabled) {
-    background: #283548;
-    border-color: rgba(255, 255, 255, 0.15);
+.btn-secondary:hover:not(:disabled),
+a.btn-secondary:hover:not(:disabled),
+button.btn-secondary:hover:not(:disabled),
+.btn-secondary:focus:not(:disabled),
+a.btn-secondary:focus:not(:disabled),
+button.btn-secondary:focus:not(:disabled) {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(222, 219, 200, 0.45) !important;
+    color: #ffffff !important;
     transform: translateY(-1px);
+}
+
+/* Global Prisma Nav Actions (used in Header across all pages) */
+.prisma-nav-login-link,
+a.prisma-nav-login-link,
+button.prisma-nav-login-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: #E1E0CC !important;
+    text-decoration: none !important;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(222, 219, 200, 0.18) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+}
+
+.prisma-nav-login-link:hover:not(:disabled),
+a.prisma-nav-login-link:hover:not(:disabled),
+button.prisma-nav-login-link:hover:not(:disabled) {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(222, 219, 200, 0.45) !important;
+    transform: translateY(-1px);
+}
+
+.prisma-nav-cta-btn,
+a.prisma-nav-cta-btn,
+button.prisma-nav-cta-btn {
+    background: #DEDBC8 !important;
+    color: #000000 !important;
+    font-size: 13px;
+    font-weight: 600;
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid #DEDBC8 !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(222, 219, 200, 0.18);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+}
+
+.prisma-nav-cta-btn:hover:not(:disabled),
+a.prisma-nav-cta-btn:hover:not(:disabled),
+button.prisma-nav-cta-btn:hover:not(:disabled),
+.prisma-nav-cta-btn:focus:not(:disabled),
+a.prisma-nav-cta-btn:focus:not(:disabled),
+button.prisma-nav-cta-btn:focus:not(:disabled) {
+    background: #ECE9D8 !important;
+    border-color: #ECE9D8 !important;
+    color: #000000 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(222, 219, 200, 0.32);
 }
 
 .btn-success {
@@ -174,15 +297,15 @@ a:hover {
 }
 
 .btn-sm {
-    padding: 6px 12px;
+    padding: 8px 18px;
     font-size: 13px;
-    border-radius: 6px;
+    border-radius: 9999px;
 }
 
 .btn-lg {
     padding: 14px 28px;
     font-size: 16px;
-    border-radius: 10px;
+    border-radius: 9999px;
 }
 
 /* Input Styles */
@@ -202,11 +325,11 @@ a:hover {
 
 .input-field {
     width: 100%;
-    padding: 11px 14px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-main);
+    padding: 12px 16px;
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #E1E0CC;
     font-family: var(--font-sans);
     font-size: 14px;
     transition: all var(--transition-fast);
@@ -214,8 +337,9 @@ a:hover {
 }
 
 .input-field:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px var(--primary-glow);
+    border-color: #DEDBC8;
+    box-shadow: 0 0 0 3px rgba(222, 219, 200, 0.15);
+    background: #101010;
 }
 
 .input-field::placeholder {
@@ -259,9 +383,9 @@ a:hover {
 }
 
 .badge-primary {
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--primary-light);
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(222, 219, 200, 0.12);
+    color: #E1E0CC;
+    border: 1px solid rgba(222, 219, 200, 0.25);
 }
 
 .badge-success {

@@ -1,4 +1,11 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
+require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: true });
+
+// Ensure user-specified MongoDB connection is used if placeholder exists in container env
+if (!process.env.MONGO_URI || process.env.MONGO_URI.includes("cluster0.mongodb.net") || process.env.MONGO_URI.includes("<username>")) {
+    process.env.MONGO_URI = "mongodb+srv://admin:4UaqIKxEvR1S2pfV@locatordb.nj82y8d.mongodb.net/?appName=LocatorDb";
+}
 
 const dns = require("dns");
 if (dns.setDefaultResultOrder) {
@@ -31,8 +38,14 @@ app.set("trust proxy", 1);
 
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 
+if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = "codesync-jwt-dev-secret-key-collaborative-32chars";
+}
+
 // 1. Security Headers & CORS
 app.use(helmet({
+    contentSecurityPolicy: false,
+    frameguard: false,
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
@@ -111,7 +124,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // 6. Server Initialization & Graceful Shutdown
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.SERVER_PORT || 5000;
 
 const startServer = async () => {
     try {

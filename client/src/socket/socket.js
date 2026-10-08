@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { getToken } from "../utils/auth";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
 export const socket = io(SOCKET_URL, {
     autoConnect: false,

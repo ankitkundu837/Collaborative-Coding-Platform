@@ -1,0 +1,1241 @@
+/* ==========================================================================
+   Prisma — Cinematic Dark Creative Studio & Experience Stylesheet
+   Fonts: Almarai (global sans), Instrument Serif (italic editorial accent)
+   Palette: Black (#000000), Warm Cream (#DEDBC8), Text Cream (#E1E0CC), Cards (#101010, #212121)
+   ========================================================================== */
+
+.prisma-page {
+    background-color: #000000;
+    color: #E1E0CC;
+    font-family: 'Almarai', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Serif font utility */
+.font-serif-accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+}
+
+/* Noise Textures */
+.noise-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.7;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 2;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+.bg-noise {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Container & Inset Frame
+   -------------------------------------------------------------------------- */
+.prisma-hero-container {
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .prisma-hero-container {
+        padding: 24px;
+    }
+}
+
+.prisma-hero-frame {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    height: calc(100vh - 32px);
+    min-height: 640px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #000000;
+}
+
+@media (min-width: 768px) {
+    .prisma-hero-frame {
+        border-radius: 2rem;
+        height: calc(100vh - 48px);
+    }
+}
+
+/* Hero Background Video */
+.prisma-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+/* Hero Gradient Overlay */
+.prisma-hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.75) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Hero Top Hanging Pill Navigation — Single Unified Header */
+.prisma-hero-nav {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    background-color: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom-left-radius: 1.25rem;
+    border-bottom-right-radius: 1.25rem;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: min(94%, 1160px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: none;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+}
+
+@media (min-width: 768px) {
+    .prisma-hero-nav {
+        border-bottom-left-radius: 1.5rem;
+        border-bottom-right-radius: 1.5rem;
+        padding: 12px 28px;
+        gap: 32px;
+    }
+}
+
+.prisma-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #E1E0CC;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+}
+
+.prisma-nav-logo-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #DEDBC8;
+    color: #000000;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.prisma-nav-items {
+    display: none;
+    align-items: center;
+    gap: 20px;
+}
+
+@media (min-width: 768px) {
+    .prisma-nav-items {
+        display: flex;
+        gap: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .prisma-nav-items {
+        gap: 36px;
+    }
+}
+
+.prisma-nav-link {
+    font-size: 12px;
+    color: rgba(225, 224, 204, 0.75);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+@media (min-width: 1024px) {
+    .prisma-nav-link {
+        font-size: 13px;
+    }
+}
+
+.prisma-nav-link:hover {
+    color: #E1E0CC;
+}
+
+.prisma-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prisma-nav-login-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: #E1E0CC;
+    text-decoration: none;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(222, 219, 200, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.prisma-nav-login-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(222, 219, 200, 0.45);
+    transform: translateY(-1px);
+}
+
+.prisma-nav-cta-btn {
+    background: #DEDBC8;
+    color: #000000;
+    font-size: 13px;
+    font-weight: 600;
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid #DEDBC8;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(222, 219, 200, 0.18);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.prisma-nav-cta-btn:hover {
+    background: #ECE9D8;
+    border-color: #ECE9D8;
+    color: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(222, 219, 200, 0.32);
+}
+
+/* Hero Bottom Content & 12-Column Grid */
+.prisma-hero-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 24px;
+}
+
+@media (min-width: 768px) {
+    .prisma-hero-content {
+        padding: 48px;
+        padding-bottom: 56px;
+    }
+}
+
+.prisma-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: flex-end;
+}
+
+@media (min-width: 1024px) {
+    .prisma-hero-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 40px;
+    }
+}
+
+.prisma-hero-left {
+    grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+    .prisma-hero-left {
+        grid-column: span 8;
+    }
+}
+
+.prisma-hero-right {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+@media (min-width: 1024px) {
+    .prisma-hero-right {
+        grid-column: span 4;
+        padding-bottom: 12px;
+    }
+}
+
+/* Giant Prisma Title */
+.prisma-title-wrap {
+    position: relative;
+    display: inline-block;
+    user-select: none;
+}
+
+.prisma-title {
+    font-size: 24vw;
+    font-weight: 500;
+    line-height: 0.85;
+    letter-spacing: -0.07em;
+    color: #E1E0CC;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: baseline;
+}
+
+@media (min-width: 640px) { .prisma-title { font-size: 22vw; } }
+@media (min-width: 768px) { .prisma-title { font-size: 20vw; } }
+@media (min-width: 1024px) { .prisma-title { font-size: 19vw; } }
+@media (min-width: 1280px) { .prisma-title { font-size: 18vw; } }
+
+.prisma-asterisk {
+    position: relative;
+    top: -0.45em;
+    left: 0.05em;
+    font-size: 0.31em;
+    color: #DEDBC8;
+    font-family: 'Almarai', sans-serif;
+    vertical-align: super;
+}
+
+.prisma-hero-desc {
+    color: rgba(222, 219, 200, 0.7);
+    font-size: 12px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    max-width: 440px;
+}
+
+@media (min-width: 640px) { .prisma-hero-desc { font-size: 14px; } }
+@media (min-width: 768px) { .prisma-hero-desc { font-size: 16px; } }
+
+/* Hero CTA Pill Button */
+.prisma-pill-btn {
+    background-color: #DEDBC8;
+    color: #000000;
+    border-radius: 9999px;
+    height: 48px;
+    padding: 0 6px 0 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid #DEDBC8;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(222, 219, 200, 0.2);
+    max-width: fit-content;
+    white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+    .prisma-pill-btn {
+        font-size: 14px;
+        height: 48px;
+        padding: 0 6px 0 24px;
+        gap: 18px;
+    }
+}
+
+.prisma-pill-btn:hover {
+    gap: 22px;
+    background-color: #ECE9D8;
+    border-color: #ECE9D8;
+    color: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(222, 219, 200, 0.35);
+}
+
+.prisma-hero-ghost-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #E1E0CC;
+    border: 1px solid rgba(222, 219, 200, 0.22);
+    border-radius: 9999px;
+    height: 48px;
+    padding: 0 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.prisma-hero-ghost-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(222, 219, 200, 0.45);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.prisma-btn-circle {
+    background-color: #000000;
+    color: #E1E0CC;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+    .prisma-btn-circle {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+.prisma-pill-btn:hover .prisma-btn-circle {
+    transform: scale(1.08);
+}
+
+/* Quick Room Launcher Box inside Hero */
+.prisma-quick-input-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 5px 6px 5px 18px;
+    max-width: 420px;
+    backdrop-filter: blur(14px);
+    transition: border-color 0.2s ease;
+}
+
+.prisma-quick-input-wrap:focus-within {
+    border-color: rgba(222, 219, 200, 0.4);
+}
+
+.prisma-quick-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #E1E0CC;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    flex: 1;
+}
+
+.prisma-quick-input::placeholder {
+    color: #6B7280;
+}
+
+.prisma-quick-btn {
+    background: #171717;
+    color: #DEDBC8;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.prisma-quick-btn:hover {
+    background: #242424;
+    border-color: rgba(222, 219, 200, 0.3);
+    color: #ECE9D8;
+}
+
+/* --------------------------------------------------------------------------
+   Section 2 — About
+   -------------------------------------------------------------------------- */
+.prisma-about-section {
+    background-color: #000000;
+    padding: 80px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .prisma-about-section {
+        padding: 120px 24px;
+    }
+}
+
+.prisma-about-card {
+    background-color: #101010;
+    max-width: 1140px;
+    width: 100%;
+    border-radius: 1.5rem;
+    padding: 48px 24px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+@media (min-width: 768px) {
+    .prisma-about-card {
+        border-radius: 2rem;
+        padding: 80px 48px;
+    }
+}
+
+.prisma-about-label {
+    color: #DEDBC8;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+@media (min-width: 640px) {
+    .prisma-about-label { font-size: 12px; }
+}
+
+.prisma-about-heading {
+    max-width: 48rem;
+    margin: 0 auto 36px;
+    font-size: 28px;
+    line-height: 0.95;
+    color: #E1E0CC;
+}
+
+@media (min-width: 640px) { .prisma-about-heading { font-size: 38px; line-height: 0.9; } }
+@media (min-width: 768px) { .prisma-about-heading { font-size: 50px; } }
+@media (min-width: 1024px) { .prisma-about-heading { font-size: 60px; } }
+@media (min-width: 1280px) { .prisma-about-heading { font-size: 70px; } }
+
+.prisma-about-body {
+    color: #DEDBC8;
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 46rem;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) { .prisma-about-body { font-size: 14px; } }
+@media (min-width: 768px) { .prisma-about-body { font-size: 16px; } }
+
+/* Letter scroll reveal span */
+.animated-letter {
+    display: inline;
+    transition: opacity 0.15s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Section 3 — Features
+   -------------------------------------------------------------------------- */
+.prisma-features-section {
+    min-height: 100vh;
+    background-color: #000000;
+    position: relative;
+    padding: 80px 16px 120px;
+}
+
+@media (min-width: 768px) {
+    .prisma-features-section {
+        padding: 100px 24px 140px;
+    }
+}
+
+.prisma-features-container {
+    max-width: 1360px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 5;
+}
+
+.prisma-features-header {
+    margin-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+    .prisma-features-header {
+        margin-bottom: 64px;
+    }
+}
+
+.prisma-features-h1 {
+    font-size: 22px;
+    color: #E1E0CC;
+    font-weight: 400;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) { .prisma-features-h1 { font-size: 26px; } }
+@media (min-width: 768px) { .prisma-features-h1 { font-size: 32px; } }
+@media (min-width: 1024px) { .prisma-features-h1 { font-size: 38px; } }
+
+.prisma-features-h2 {
+    font-size: 22px;
+    color: #6B7280;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) { .prisma-features-h2 { font-size: 26px; } }
+@media (min-width: 768px) { .prisma-features-h2 { font-size: 32px; } }
+@media (min-width: 1024px) { .prisma-features-h2 { font-size: 38px; } }
+
+/* Features 4-Card Grid */
+.prisma-features-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+    .prisma-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .prisma-features-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+}
+
+/* Feature Card 1 (Cinematic Video) */
+.prisma-card-video {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    background: #101010;
+}
+
+@media (min-width: 1024px) {
+    .prisma-card-video {
+        height: 480px;
+    }
+}
+
+.prisma-card-video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.prisma-card-video-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
+    z-index: 2;
+}
+
+.prisma-card-video-content {
+    position: relative;
+    z-index: 3;
+}
+
+.prisma-card-video-title {
+    font-size: 18px;
+    color: #E1E0CC;
+    font-weight: 500;
+}
+
+/* Feature Cards 2, 3, 4 (Dark Gray #212121) */
+.prisma-feature-card {
+    background-color: #212121;
+    border-radius: 1rem;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 420px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+@media (min-width: 1024px) {
+    .prisma-feature-card {
+        height: 480px;
+    }
+}
+
+.prisma-feature-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(222, 219, 200, 0.2);
+}
+
+.prisma-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.prisma-card-icon-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 640px) {
+    .prisma-card-icon-img {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+.prisma-card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #6B7280;
+    font-weight: 600;
+}
+
+.prisma-card-title {
+    font-size: 20px;
+    color: #E1E0CC;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+}
+
+.prisma-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.prisma-checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #9CA3AF;
+}
+
+.prisma-check-icon {
+    color: #DEDBC8;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.prisma-learn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #DEDBC8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-top: auto;
+}
+
+.prisma-learn-more:hover {
+    color: #ECE9D8;
+    gap: 10px;
+}
+
+.prisma-arrow-rotated {
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.prisma-learn-more:hover .prisma-arrow-rotated {
+    transform: rotate(-45deg) translate(2px, -2px);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hero Telemetry Pills */
+.prisma-hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.prisma-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    border-radius: 9999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #9CA3AF;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.prisma-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    box-shadow: 0 0 8px #10b981;
+}
+
+/* Interactive Room Showcase Section */
+.prisma-showcase-section {
+    background-color: #000000;
+    padding: 60px 16px 100px;
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .prisma-showcase-section {
+        padding: 80px 24px 120px;
+    }
+}
+
+.prisma-showcase-container {
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.prisma-showcase-card {
+    background-color: #101010;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+}
+
+.prisma-showcase-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #0a0a0a;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.prisma-showcase-tab {
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9CA3AF;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.prisma-showcase-tab:hover {
+    color: #E1E0CC;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.prisma-showcase-tab.active {
+    color: #000000;
+    background: #DEDBC8;
+    font-weight: 600;
+}
+
+.prisma-showcase-body {
+    padding: 24px;
+    min-height: 380px;
+}
+
+@media (min-width: 768px) {
+    .prisma-showcase-body {
+        padding: 32px;
+    }
+}
+
+/* Triage Matrix Grid & Live Inspector */
+.prisma-triage-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 960px) {
+    .prisma-triage-layout {
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: stretch;
+    }
+}
+
+.prisma-triage-matrix {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prisma-triage-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+.prisma-triage-item:hover {
+    background: #191919;
+    border-color: rgba(222, 219, 200, 0.25);
+    transform: translateX(2px);
+}
+
+.prisma-triage-item.active {
+    background: #1e1e1e;
+    border-color: rgba(222, 219, 200, 0.45);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(222, 219, 200, 0.08);
+}
+
+.prisma-triage-inspector {
+    background: #0d0d0d;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* Comparison Table Section */
+.prisma-compare-section {
+    background-color: #000000;
+    padding: 80px 16px 100px;
+}
+
+@media (min-width: 768px) {
+    .prisma-compare-section {
+        padding: 100px 24px 120px;
+    }
+}
+
+.prisma-compare-card {
+    background-color: #101010;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 32px 20px;
+    max-width: 1140px;
+    margin: 0 auto;
+    overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+    .prisma-compare-card {
+        border-radius: 2rem;
+        padding: 48px 40px;
+    }
+}
+
+.prisma-compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 680px;
+}
+
+.prisma-compare-table th {
+    text-align: left;
+    padding: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9CA3AF;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.prisma-compare-table td {
+    padding: 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #DEDBC8;
+    vertical-align: middle;
+}
+
+.prisma-compare-feature {
+    color: #E1E0CC;
+    font-weight: 500;
+}
+
+.prisma-compare-sub {
+    font-size: 11px;
+    color: #6B7280;
+    margin-top: 2px;
+}
+
+.prisma-compare-codesync {
+    color: #E1E0CC;
+    font-weight: 600;
+    background: rgba(222, 219, 200, 0.03);
+}
+
+.prisma-compare-generic {
+    color: #6B7280;
+}
+
+/* Runtimes Section */
+.prisma-runtimes-section {
+    background-color: #000000;
+    padding: 40px 16px 80px;
+}
+
+@media (min-width: 768px) {
+    .prisma-runtimes-section {
+        padding: 60px 24px 100px;
+    }
+}
+
+.prisma-runtimes-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+    .prisma-runtimes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .prisma-runtimes-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.prisma-runtime-pill {
+    background-color: #171717;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 140px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.prisma-runtime-pill:hover {
+    transform: translateY(-2px);
+    border-color: rgba(222, 219, 200, 0.2);
+}
+
+.prisma-runtime-lang {
+    font-size: 15px;
+    font-weight: 600;
+    color: #E1E0CC;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prisma-runtime-flags {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #9CA3AF;
+    line-height: 1.4;
+}
+
+.prisma-runtime-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+
+/* Comprehensive Production Footer */
+.prisma-footer {
+    background-color: #000000;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 80px 24px 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.prisma-footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.prisma-footer-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    margin-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+    .prisma-footer-top {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 32px;
+    }
+}
+
+.prisma-footer-brand-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 380px;
+}
+
+.prisma-footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #E1E0CC;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.03em;
+}
+
+.prisma-footer-desc {
+    color: #9CA3AF;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.prisma-footer-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #DEDBC8;
+    background: #101010;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: fit-content;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.prisma-footer-col h5 {
+    color: #E1E0CC;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 18px;
+}
+
+.prisma-footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.prisma-footer-link {
+    color: #9CA3AF;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.prisma-footer-link:hover {
+    color: #DEDBC8;
+}
+
+.prisma-footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+    .prisma-footer-bottom {
+        flex-direction: row;
+    }
+}
+
+.prisma-footer-copy {
+    color: #6B7280;
+    font-size: 12px;
+}
+
+.prisma-footer-subcopy {
+    color: #9CA3AF;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}

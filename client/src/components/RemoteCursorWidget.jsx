@@ -1,5 +1,5 @@
 class RemoteCursorWidget {
-    constructor(monaco, editor, id, name, color = "#6366f1", lineNumber = 1, column = 1) {
+    constructor(monaco, editor, id, name, color = "#DEDBC8", lineNumber = 1, column = 1) {
         this.id = id;
         this.editor = editor;
         this.monaco = monaco;

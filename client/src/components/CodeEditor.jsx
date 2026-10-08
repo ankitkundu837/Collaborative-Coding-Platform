@@ -106,7 +106,7 @@ function CodeEditor({
                 editorRef.current,
                 userId,
                 displayName || "Anonymous",
-                color || "#6366f1",
+                color || "#DEDBC8",
                 lineNumber || 1,
                 column || 1
             );

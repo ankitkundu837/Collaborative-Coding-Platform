@@ -96,7 +96,7 @@ function VerifyOTPForm() {
                         style={{
                             background: "transparent",
                             border: "none",
-                            color: cooldown > 0 ? "var(--text-dim)" : "var(--accent-primary)",
+                            color: cooldown > 0 ? "var(--text-dim)" : "#DEDBC8",
                             fontSize: "12px",
                             cursor: cooldown > 0 ? "not-allowed" : "pointer",
                             fontWeight: 600,

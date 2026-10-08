@@ -35,7 +35,7 @@ function JoinRoomCard() {
     return (
         <div className="card card-interactive" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "rgba(6, 182, 212, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "rgba(222, 219, 200, 0.15)", color: "#DEDBC8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
                     🔗
                 </div>
                 <div>

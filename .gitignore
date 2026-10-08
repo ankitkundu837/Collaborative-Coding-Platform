@@ -7,5 +7,3 @@ docker-compose.override.yml
 # OS / Editor files
 .DS_Store
 Thumbs.db
-node_modules
-stitch_syncode_collaborative_competitive_programming_platform

@@ -1,0 +1,15 @@
+{
+  "name": "codesync",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix client && npm install --prefix server",
+    "start": "concurrently \"npm start --prefix server\" \"npm run dev --prefix client\"",
+    "dev": "concurrently \"npm start --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "lint": "npm run lint --prefix client"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
